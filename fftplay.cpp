@@ -5,6 +5,7 @@
 // though there is a complex type defined later in the book.
 // use C++ complex (TO DO)
 // replace hard-coded trigv values with calculation (TO DO)
+// make 0-origin uindexing (TO DO)
 
 #include <iostream>
 #include <complex>
@@ -16,22 +17,24 @@ void four1(float *data, int nn, int isign);
 
 int main()
 {
-    float data[16] ={0, 0, 1, 0, 2, 0, 1, 0, 0, 0, -1, 0, -2, 0, -1, 0};
+    //float data[16] ={0, 0, 1, 0, 2, 0, 1, 0, 0, 0, -1, 0, -2, 0, -1, 0};
+    //x = np.array([1.0, 2.0, 1.0, -1.0, 1.5])
+    float data[16] ={1, 0, 2, 0, 1, 0, -1, 0, 1.5, 0, 0, 0, 0, 0, 0, 0};
 
     cout << "FFT module test" << endl;
     const   complex<double> i(0.0,1.0);    
     cout << "Complex vals test " << i << endl;
     cout << "FFT test" << endl << "data =";
-    for (int i = 0; i < 16; i += 2)
+    for (int i = 0; i < 18; i += 2)
     {
         cout << " " << data[i] << " " << data[i+1];
     }
     cout << endl;
 
-    four1(data, 8, 1);
+    four1(data-1, 8, 1); // zero-origin indexing
 
     cout << "New data =";
-    for (int i = 0; i < 16; i += 2)
+    for (int i = 0; i < 18; i += 2)
     {
         cout << " " << data[i] << " " << data[i+1];
     }
@@ -47,6 +50,7 @@ void four1(float *data, int nn, int isign)
 // nn time its inverse discrete transform , if isign is input as -1. data is a complex array
 // of length nn, input as a real array data[1..2*nn].
 // nn MUST be an iteger power of 2 (this is not checked for!).
+// make 0-origin indexing (FFS), first make 1-indexing work with data shifted by 1
 {
     int n, mmax, m, j, istep, i;
     double wtemp, wr, wpr, wpi, wi, theta; // Double precision for the trigonometric recurrences.
@@ -54,9 +58,9 @@ void four1(float *data, int nn, int isign)
 
     n = nn << 1;
     j = 1;
-    for (i=1; i < n; i+=2) // This is the bit-reverasal section of the routine.
+    for (i=1; i < n; i+=2) // This is the bit-reversal section of the routine.
     {
-        if (j > i) 
+        if (j > i)
         {
             SWAP(data[j], data[i]);     // Exchange the two complex numbers.
             SWAP(data[j+1], data[i+1]);
