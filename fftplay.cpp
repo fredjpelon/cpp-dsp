@@ -6,6 +6,7 @@
 // use C++ complex (TO DO)
 // replace hard-coded trigv values with calculation (TO DO)
 // make 0-origin uindexing (TO DO)
+// https://stackoverflow.com/questions/74373807/example-on-fft-from-numerical-recipes-book-results-in-runtime-error
 
 #include <iostream>
 #include <complex>
@@ -13,48 +14,66 @@
 using namespace std ;
 
 // Numerical Recipes in C, 1988
-void four1(float *data, int nn, int isign);
+void four1(double *data, unsigned long nn, int isign);
 
 int main()
 {
+    unsigned long nn = 8;
+    int isign = 1;
     //float data[16] ={0, 0, 1, 0, 2, 0, 1, 0, 0, 0, -1, 0, -2, 0, -1, 0};
     //x = np.array([1.0, 2.0, 1.0, -1.0, 1.5])
-    float data[16] ={1, 0, 2, 0, 1, 0, -1, 0, 1.5, 0, 0, 0, 0, 0, 0, 0};
+    double data[nn*2] ={1, 0, 2, 0, 1, 0, -1, 0, 1.5, 0, 0, 0, 0, 0, 0, 0};
+    //double data[nn*2] ={0, 0, 1, 0, 0, 0, -1, 0};
 
     cout << "FFT module test" << endl;
     const   complex<double> i(0.0,1.0);    
     cout << "Complex vals test " << i << endl;
     cout << "FFT test" << endl << "data =";
-    for (int i = 0; i < 18; i += 2)
+    for (int i = 0; i < nn*2; i += 2)
     {
         cout << " " << data[i] << " " << data[i+1];
     }
     cout << endl;
 
-    four1(data-1, 8, 1); // zero-origin indexing
+    four1(data-1, nn, isign); // zero-origin indexing
 
     cout << "New data =";
-    for (int i = 0; i < 18; i += 2)
+    for (int i = 0; i < nn*2; i += 2)
     {
         cout << " " << data[i] << " " << data[i+1];
+    }
+    cout << endl;
+
+    cout << "mag =";
+    for (int i = 0; i < nn*2; i += 2)
+    {
+        cout << " " << sqrt(data[i]*data[i]+data[i+1]*data[i+1]);
+    }
+    cout << endl;
+
+    cout << "angle =";
+    for (int i = 0; i < nn*2; i += 2)
+    {
+        cout << " " << atan2(data[i+1],data[i]);
     }
     cout << endl;
 
 }
 
 // from Numerical Recipes in C
-#define SWAP(a,b) tempr = (a); (a) = (b); (b) = tempr
+//#define SWAP(a,b) tempr = (a); (a) = (b); (b) = tempr
 
-void four1(float *data, int nn, int isign)
+void four1(double *data, unsigned long nn, int isign)
 // Replaces data by its discrete Fourier transform, if isign is input as 1; or replaces data by
-// nn time its inverse discrete transform , if isign is input as -1. data is a complex array
+// nn time its inverse discrete transform, if isign is input as -1. data is a complex array
 // of length nn, input as a real array data[1..2*nn].
-// nn MUST be an iteger power of 2 (this is not checked for!).
+// nn MUST be an integer power of 2 (this is not checked for!).
 // make 0-origin indexing (FFS), first make 1-indexing work with data shifted by 1
+// per NumRinC (see text ahead of function)
 {
-    int n, mmax, m, j, istep, i;
+    unsigned long n, mmax, m, j, istep, i;
     double wtemp, wr, wpr, wpi, wi, theta; // Double precision for the trigonometric recurrences.
-    float tempr, tempi;
+    double tempr, tempi;
 
     n = nn << 1;
     j = 1;
@@ -62,8 +81,8 @@ void four1(float *data, int nn, int isign)
     {
         if (j > i)
         {
-            SWAP(data[j], data[i]);     // Exchange the two complex numbers.
-            SWAP(data[j+1], data[i+1]);
+            swap(data[j], data[i]);     // Exchange the two complex numbers.
+            swap(data[j+1], data[i+1]);
         }
 
         m = n >> 1;
@@ -78,10 +97,11 @@ void four1(float *data, int nn, int isign)
     mmax = 2;           // Here begins the Danielson-Lanczos section of the routine.
     while (n > mmax)    // Outer loop executed log<sub 2^nn> times.
     {
-        istep = 2*mmax;
-        theta = 6.28318530717959/(isign*mmax); // Initialize for the trigionometric recurrence.
+        istep = mmax << 1;
+        theta = isign * (6.28318530717959/mmax); // Initialize for the trigionometric recurrence.
         wtemp = sin(0.5*theta);
         wpr = -2.0*wtemp*wtemp;
+        //wpi = -sin(theta); // make this negative here to match the scipy (python) FFT implementation
         wpi = sin(theta);
         wr = 1.0;
         wi = 0.0;
@@ -105,4 +125,4 @@ void four1(float *data, int nn, int isign)
         mmax = istep;
     }
 }
-#undef SWAP
+//#undef SWAP
