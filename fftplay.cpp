@@ -7,56 +7,90 @@
 // replace hard-coded trigv values with calculation (TO DO)
 // make 0-origin uindexing (TO DO)
 // https://stackoverflow.com/questions/74373807/example-on-fft-from-numerical-recipes-book-results-in-runtime-error
+// 1/1/2024 Switched to new routine found in SO, need to vet it completely (TO DO)
+// Checked out with vs. python with 8-element non-zero mean vector
+// Some documentation on Numerical Recipes in C differences? (TO DO)
+// also, why do these routines insist on hard-coding multiples of pi?
+// implement trig function constants (TO DO)
 
 #include <iostream>
 #include <complex>
 #include <math.h>
-using namespace std ;
+using namespace std;
+
+#define M_PI 3.1415926535897932384
+#define MAX 200
 
 // Numerical Recipes in C, 1988
-void four1(double *data, unsigned long nn, int isign);
+//void four1(double *data, unsigned long nn, int isign);
+void FFT(complex<double>* f, int N, double d);
 
 int main()
 {
-    unsigned long nn = 8;
-    int isign = 1;
+    unsigned long n = 8;
+    //int isign = 1;
+    int step_size = 1; 
     //float data[16] ={0, 0, 1, 0, 2, 0, 1, 0, 0, 0, -1, 0, -2, 0, -1, 0};
     //x = np.array([1.0, 2.0, 1.0, -1.0, 1.5])
-    double data[nn*2] ={1, 0, 2, 0, 1, 0, -1, 0, 1.5, 0, 0, 0, 0, 0, 0, 0};
+    //double data[nn*2] ={1, 0, 2, 0, 1, 0, -1, 0, 1.5, 0, 0, 0, 0, 0, 0, 0};
     //double data[nn*2] ={0, 0, 1, 0, 0, 0, -1, 0};
+    //complex<double> vec[n]={{0,0},{1,0},{0,0},{-1,0}};
+    complex<double> vec[n]={{1, 0}, {2, 0}, {1, 0}, {-1, 0}, {1.5, 0}, {0, 0}, {0, 0}, {0, 0}};
 
-    cout << "FFT module test" << endl;
-    const   complex<double> i(0.0,1.0);    
-    cout << "Complex vals test " << i << endl;
-    cout << "FFT test" << endl << "data =";
-    for (int i = 0; i < nn*2; i += 2)
+    //cout << "FFT module test" << endl;
+    //const   complex<double> i(0.0,1.0);    
+    //cout << "Complex vals test " << i << endl;
+    cout << "FFT test" << endl;
+    cout << "Input vector = " << endl;
+    for(int j = 0; j < n; j++)
     {
-        cout << " " << data[i] << " " << data[i+1];
+        cout << " " << vec[j];
     }
     cout << endl;
+    //for (int i = 0; i < nn*2; i += 2)
+    //{
+    //    cout << " " << data[i] << " " << data[i+1];
+    //}
+    //cout << endl;
 
-    four1(data-1, nn, isign); // zero-origin indexing
+    //four1(data-1, nn, isign); // zero-origin indexing
+    FFT(vec, n, step_size);
 
     cout << "New data =";
-    for (int i = 0; i < nn*2; i += 2)
+    for(int j = 0; j < n; j++)
     {
-        cout << " " << data[i] << " " << data[i+1];
+        cout << " " << vec[j];
     }
     cout << endl;
+//    for (int i = 0; i < nn*2; i += 2)
+//    {
+//        cout << " " << data[i] << " " << data[i+1];
+//    }
+//    cout << endl;
 
     cout << "mag =";
-    for (int i = 0; i < nn*2; i += 2)
+    for(int j = 0; j < n; j++)
     {
-        cout << " " << sqrt(data[i]*data[i]+data[i+1]*data[i+1]);
+        cout << " " << abs(vec[j]);
     }
     cout << endl;
+//    for (int i = 0; i < nn*2; i += 2)
+//    {
+//        cout << " " << sqrt(data[i]*data[i]+data[i+1]*data[i+1]);
+//    }
+//    cout << endl;
 
     cout << "angle =";
-    for (int i = 0; i < nn*2; i += 2)
+    for(int j = 0; j < n; j++)
     {
-        cout << " " << atan2(data[i+1],data[i]);
+        cout << " " << arg(vec[j]);
     }
     cout << endl;
+//    for (int i = 0; i < nn*2; i += 2)
+//    {
+//        cout << " " << atan2(data[i+1],data[i]);
+//    }
+//    cout << endl;
 
 }
 
@@ -128,25 +162,26 @@ void four1(double *data, unsigned long nn, int isign)
 //#undef SWAP
 
 // from someone on stackoverflow
-#include <iostream>
-#include <complex>
-#define MAX 200
+//#include <iostream>
+//#include <complex>
+//#define MAX 200
 
-using namespace std;
+//using namespace std;
 
-#define M_PI 3.1415926535897932384
+//#define M_PI 3.1415926535897932384
 
-int log2(int N)    /*function to calculate the log2(.) of int numbers*/
+int log2(int N)    // function to calculate the log2(.) of int numbers
 {
   int k = N, i = 0;
-  while(k) {
+  while(k)
+  {
     k >>= 1;
     i++;
   }
   return i - 1;
 }
 
-int check(int n)    //checking if the number of element is a power of 2
+int check(int n)    // checking if the number of element is a power of 2
 {
   return n > 0 && (n & (n - 1)) == 0;
 }
@@ -203,25 +238,25 @@ void FFT(complex<double>* f, int N, double d)
     f[i] *= d; //multiplying by step
 }
 
-int main()
-{
-  int n;
-  do {
-    cout << "specify array dimension (MUST be power of 2)" << endl;
-    cin >> n;
-  } while(!check(n));
-  double d;
-  cout << "specify sampling step" << endl; //just write 1 in order to have the same results of matlab fft(.)
-  cin >> d;
-  complex<double> vec[MAX];
-  cout << "specify the array" << endl;
-  for(int i = 0; i < n; i++) {
-    cout << "specify element number: " << i << endl;
-    cin >> vec[i];
-  }
-  FFT(vec, n, d);
-  cout << "...printing the FFT of the array specified" << endl;
-  for(int j = 0; j < n; j++)
-    cout << vec[j] << endl;
-  return 0;
-}
+// int main()
+//{
+//  int n;
+//  do {
+//    cout << "specify array dimension (MUST be power of 2)" << endl;
+//    cin >> n;
+//  } while(!check(n));
+//  double d;
+//  cout << "specify sampling step" << endl; //just write 1 in order to have the same results of matlab fft(.)
+//  cin >> d;
+//  complex<double> vec[MAX];
+//  cout << "specify the array" << endl;
+//  for(int i = 0; i < n; i++) {
+//    cout << "specify element number: " << i << endl;
+//    cin >> vec[i];
+//  }
+//  FFT(vec, n, d);
+//  cout << "...printing the FFT of the array specified" << endl;
+//  for(int j = 0; j < n; j++)
+//    cout << vec[j] << endl;
+//  return 0;
+//}
