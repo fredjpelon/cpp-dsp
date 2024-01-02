@@ -10,18 +10,27 @@ using namespace std;
 
 #define BUF_SIZE 4
 #define D_BUF_SIZE 2
+#define WAV_HEADER_SIZE 44 // bytes
 
 class Wavfile
 {
 private:
     char m_buf[BUF_SIZE]={0,0};
+    char m_d_buf[D_BUF_SIZE]={0};
     //m_buf = new char [BUF_SIZE];
+    int m_file_len;
+    int m_data_len, m_data_len_in_bytes;
+    int m_header_len = WAV_HEADER_SIZE/2; // in double bytes
 public:
-    void ReadHeader(const char* fname)
+    string fname;
+    int16_t *data;
+
+public:
+    void ReadHeader()
     {
         // read in a wav file
         cout << fname << endl;
-        ifstream ifs(fname,ios::binary);
+        ifstream ifs(fname.c_str(),ios::binary);
         if(!ifs)
         {
             cout << "couldn't open target for input\n";
@@ -32,9 +41,9 @@ public:
         ifs.read(m_buf,BUF_SIZE); // RIFF
         cout << string(&m_buf[0], BUF_SIZE) << endl;
         ifs.read(m_buf,BUF_SIZE); // file size
-        int file_len = *reinterpret_cast<int*>(m_buf);
-        file_len += 8; // size on disk
-        cout << "file_len = " << file_len << endl;
+        m_file_len = *reinterpret_cast<int*>(m_buf);
+        m_file_len += 8; // size on disk
+        cout << "file_len = " << m_file_len << endl;
         ifs.read(m_buf,BUF_SIZE); // WAVE
         cout << string(&m_buf[0], BUF_SIZE) << endl;
         ifs.read(m_buf,BUF_SIZE); // fmt chunk marker
@@ -62,9 +71,31 @@ public:
         ifs.read(m_buf,BUF_SIZE); // data
         cout << string(&m_buf[0], BUF_SIZE) << endl;
         ifs.read(m_buf,BUF_SIZE); // data len
-        int data_len_in_bytes = *reinterpret_cast<int*>(m_buf);
-        int data_len = data_len_in_bytes/(bits_per_sample/8);
-        cout << "data_len = " << data_len << endl;        
+        m_data_len_in_bytes = *reinterpret_cast<int*>(m_buf);
+        m_data_len = m_data_len_in_bytes/(bits_per_sample/8);
+        cout << "data_len = " << m_data_len << endl;        
+
+        ifs.close();
+    }
+    void ReadData()
+    {
+        data = new int16_t [m_data_len];
+
+        ifstream ifs(fname.c_str(),ios::binary);
+        if(!ifs)
+        {
+            cout << "couldn't open target for input\n";
+            //return 1;
+        }
+        for(int i =0; i < m_header_len; i++) // move the file pointer to the start of data
+        {
+            ifs.read(m_d_buf,D_BUF_SIZE); // data len
+        }
+        for(int i=0; i < m_data_len; i+=2)
+        {
+            ifs.read(m_d_buf,D_BUF_SIZE); // data
+            data[i/2] = (((int)*(m_d_buf+1)) << 8) | (int)*(m_d_buf);
+        }
 
         ifs.close();
     }
@@ -79,7 +110,14 @@ int main()
     string fname = "JFJF_2023126_11158_2.wav";
     //string playcmd = "aplay " + fname;
 
-    wavfile.ReadHeader(fname.c_str());
+    wavfile.fname = fname;
+    //wavfile.ReadHeader(fname.c_str());
+    wavfile.ReadHeader();
+    wavfile.ReadData();
+    for (int i = 0; i < 5; i++)
+    {
+        cout << wavfile.data[i] << endl;
+    }
 
     return 0;
 /*
