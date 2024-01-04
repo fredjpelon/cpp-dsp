@@ -10,6 +10,7 @@ class Wavfile
 public:
     string fname;
     int16_t *data;
+    int data_len;
     void ReadHeader();
     void ReadData();
 private:
@@ -18,7 +19,7 @@ private:
     char m_buf[BUF_SIZE]={0,0};
     char m_d_buf[D_BUF_SIZE]={0};
     int m_file_len;
-    int m_data_len, m_data_len_in_bytes;
+    int m_data_len_in_bytes;
     int m_header_len = WAV_HEADER_SIZE/2; // in double bytes
 };
 

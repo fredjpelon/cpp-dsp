@@ -1,7 +1,11 @@
+// moved to all unsigned loings for the ints
+// we ain't playin' around!
+
+#include <iostream>
 #include <math.h>
 #include "dspfuncs.h"
 using namespace std;
-// from someone on stackoverflow
+// FFT from someone on stackoverflow
 //#include <iostream>
 //#include <complex>
 //#define MAX 200
@@ -10,9 +14,9 @@ using namespace std;
 
 //#define M_PI 3.1415926535897932384
 
-int log2(int N)    // function to calculate the log2(.) of int numbers
+int log2(unsigned long N)    // function to calculate the log2(.) of int numbers
 {
-  int k = N, i = 0;
+  unsigned long k = N, i = 0;
   while(k)
   {
     k >>= 1;
@@ -21,14 +25,14 @@ int log2(int N)    // function to calculate the log2(.) of int numbers
   return i - 1;
 }
 
-int check(int n)    // checking if the number of element is a power of 2
+int check(unsigned long n)    // checking if the number of element is a power of 2
 {
   return n > 0 && (n & (n - 1)) == 0;
 }
 
-int reverse(int N, int n)    //calculating revers number
+int reverse(unsigned long N, unsigned long n)    //calculating reverse number
 {
-  int j, p = 0;
+  unsigned long j, p = 0;
   for(j = 1; j <= log2(N); j++) {
     if(n & (1 << (log2(N) - j)))
       p |= 1 << (j - 1);
@@ -36,28 +40,28 @@ int reverse(int N, int n)    //calculating revers number
   return p;
 }
 
-void ordina(complex<double>* f1, int N) //using the reverse order in the array
+void ordina(complex<double>* f1, unsigned long N) //using the reverse order in the array
 {
-  complex<double> f2[MAX];
-  for(int i = 0; i < N; i++)
+  complex<double> f2[N];
+  for(unsigned long i = 0; i < N; i++)
     f2[i] = f1[reverse(N, i)];
-  for(int j = 0; j < N; j++)
+  for(unsigned long j = 0; j < N; j++)
     f1[j] = f2[j];
 }
 
-void transform(complex<double>* f, int N) //
+void transform(complex<double>* f, unsigned long N) //
 {
   ordina(f, N);    //first: reverse order
   complex<double> *W;
   W = (complex<double> *)malloc(N / 2 * sizeof(complex<double>));
   W[1] = polar(1., -2. * M_PI / N);
   W[0] = 1;
-  for(int i = 2; i < N / 2; i++)
+  for(unsigned long i = 2; i < N / 2; i++)
     W[i] = pow(W[1], i);
-  int n = 1;
-  int a = N / 2;
-  for(int j = 0; j < log2(N); j++) {
-    for(int i = 0; i < N; i++) {
+  unsigned long n = 1;
+  unsigned long a = N / 2;
+  for(unsigned long j = 0; j < log2(N); j++) {
+    for(unsigned long i = 0; i < N; i++) {
       if(!(i & n)) {
         complex<double> temp = f[i];
         complex<double> Temp = W[(i * a) % (n * a)] * f[i + n];
@@ -71,10 +75,10 @@ void transform(complex<double>* f, int N) //
   free(W);
 }
 
-void FFT(complex<double>* f, int N, double d)
+void FFT(complex<double>* f, unsigned long N, double d)
 {
   transform(f, N);
-  for(int i = 0; i < N; i++)
+  for(unsigned long i = 0; i < N; i++)
     f[i] *= d; //multiplying by step
 }
 
@@ -145,3 +149,26 @@ void four1(double *data, unsigned long nn, int isign)
 }
 //#undef SWAP
 
+void display_data(complex<double> *data, int n)
+{
+    cout << "data =";
+    for(int j = 0; j < n; j++)
+    {
+        cout << " " << data[j];
+    }
+    cout << endl;
+
+    cout << "mag =";
+    for(int j = 0; j < n; j++)
+    {
+        cout << " " << abs(data[j]);
+    }
+    cout << endl;
+
+    cout << "angle =";
+    for(int j = 0; j < n; j++)
+    {
+        cout << " " << arg(data[j]);
+    }
+    cout << endl;
+}

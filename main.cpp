@@ -3,6 +3,7 @@
 using namespace std;
 #include "Wavefile.h"
 #include "dspfuncs.h"
+#include "constants.h"
 
 
 int main()
@@ -41,25 +42,25 @@ int main()
 
     FFT(vec, n, step_size);
 
-    cout << "New data =";
-    for(int j = 0; j < n; j++)
-    {
-        cout << " " << vec[j];
-    }
-    cout << endl;
+    display_data(vec,n);
 
-    cout << "mag =";
-    for(int j = 0; j < n; j++)
+    // Now, let's play with the wav data
+    // start with a small vector
+    cout << "data_len = " << wavfile.data_len << endl;
+    n = wavfile.data_len;
+    long nn = 131072;
+    cout << "FFT length = " << nn << endl;
+    complex<double> xformdata[nn];
+    for(int i = 0; i < nn; i++)
     {
-        cout << " " << abs(vec[j]);
+        //creating the complex number, let's normalize that pup while we're here
+        xformdata[i] = complex <double> ((double)wavfile.data[i]/BIT16_MAX, 0);
     }
-    cout << endl;
 
-    cout << "angle =";
-    for(int j = 0; j < n; j++)
-    {
-        cout << " " << arg(vec[j]);
-    }
-    cout << endl;
+    cout << "Prairie dog data before " << endl;
+    display_data(xformdata,8);
+    FFT(xformdata, nn, step_size);
+    cout << "Prairie dog data after " << endl;
+    display_data(xformdata,8);
 
 }
