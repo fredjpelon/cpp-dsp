@@ -25,7 +25,7 @@ using namespace std;
 //void four1(double *data, unsigned long nn, int isign);
 void FFT(complex<double>* f, int N, double d);
 
-int main()
+int main_dep1()
 {
     unsigned long n = 8;
     //int isign = 1;

@@ -1,5 +1,6 @@
 // a C++ project to learn C++, implement some DSP functions
 // JFJF_2023126_11158_2.wav - Jasper Farms prairie dog recording
+// 1/3/2024 deprecated, making a proper project
 
 #include <iostream>
 #include <fstream>
@@ -100,7 +101,7 @@ public:
     }
 };
 
-int main()
+int main_dep()
 {
     Wavfile wavfile;
 
