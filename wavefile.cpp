@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include "constants.h"
+using namespace std;
+#include "Wavefile.h"
 
 using namespace std;
 
