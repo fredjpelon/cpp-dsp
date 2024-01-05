@@ -8,7 +8,7 @@ import numpy as np
 #file.close()
 
 f = open('fftmag.bin', 'rb')
-arr = np.fromfile(f, dtype='f8')  # count=100 optional
+arr = np.fromfile(f, dtype='f8')
 f.close()
 print(arr[:5])
 #sample_rate, raw_audio = scipy.io.wavfile.read("JFJF_2023126_11158_2.wav")
