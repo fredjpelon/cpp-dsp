@@ -1,5 +1,7 @@
 #include <iostream>
 #include <complex>
+#include <fstream>
+#include <math.h>
 using namespace std;
 #include "Wavefile.h"
 #include "dspfuncs.h"
@@ -63,4 +65,15 @@ int main()
     cout << "Prairie dog data after " << endl;
     display_data(xformdata,8);
 
+    // Create a file stream object.
+    ofstream outfile("fftmag.bin", ios::binary);
+    // write FFT mag data to a file for display
+    double tmp = 0.0;
+    cout << "size of tmp = " << sizeof tmp << endl;
+    for (unsigned long i = 0; i < nn/2; i++)
+    {
+        tmp = abs(xformdata[i]);
+        outfile.write( reinterpret_cast<char*>( &tmp ), sizeof tmp );
+    }
+    outfile.close();
 }
